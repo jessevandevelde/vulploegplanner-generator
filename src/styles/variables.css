@@ -1,0 +1,14 @@
+:root {
+  --page-background: #f5f7fb;
+  --page-background-alt: #e8eef8;
+  --surface-color: rgb(255 255 255 / 88%);
+  --surface-border: rgb(20 96 158 / 14%);
+  --text-color: #18314f;
+  --text-muted: #5f7188;
+  --accent-color: #14609e;
+  --accent-color-strong: #0d4777;
+  --shadow-color: rgb(15 23 42 / 10%);
+  --font-family-base: "Segoe UI", sans-serif;
+  --radius-large: 24px;
+  --radius-medium: 16px;
+}

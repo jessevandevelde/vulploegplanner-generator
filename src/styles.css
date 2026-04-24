@@ -1,0 +1,17 @@
+@import url("./styles/reset.css");
+@import url("./styles/variables.css");
+@import url("./styles/modal.css");
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top, rgb(20 96 158 / 18%) 0%, transparent 45%),
+    linear-gradient(180deg, var(--page-background) 0%, var(--page-background-alt) 100%);
+  color: var(--text-color);
+  font-family: var(--font-family-base);
+}
