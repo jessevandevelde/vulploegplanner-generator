@@ -137,6 +137,7 @@ export default defineConfig(
     files: ['**/*.html'],
     extends: [...angularEslint.configs.templateAll],
     rules: {
+      '@angular-eslint/template/cyclomatic-complexity': 'off',
       '@angular-eslint/template/i18n': 'off',
       '@angular-eslint/template/no-call-expression': 'off',
       '@angular-eslint/template/attributes-order': [

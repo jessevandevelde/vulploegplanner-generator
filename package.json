@@ -5,7 +5,9 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --host 127.0.0.1",
+    "start:frontend": "ng serve --host 127.0.0.1",
+    "backend": "node scripts/backend-server.mjs",
+    "start": "node scripts/dev-server.mjs",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
