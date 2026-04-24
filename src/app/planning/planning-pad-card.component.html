@@ -1,0 +1,70 @@
+<article class="pad-card" [class.has-conflict]="hasConflict()">
+  <div class="pad-card-header">
+    <div>
+      <h3>{{ pad().padName }}</h3>
+      <p class="pad-meta">{{ pad().groups.length }} groep(en)</p>
+    </div>
+
+    <span class="colli-badge">{{ pad().totalColli }} colli</span>
+  </div>
+
+  <ul class="group-list">
+    @for (group of pad().groups; track group.code) {
+    <li class="group-item">
+      <span>{{ group.description }}</span>
+      <strong>{{ group.colli }}</strong>
+    </li>
+    }
+  </ul>
+
+  <div class="medewerkers-block">
+    <p class="medewerkers-title">Medewerkers</p>
+
+    @for (medewerker of pad().medewerkers; track $index) {
+    <div class="employee-row">
+      <input
+        class="person-input"
+        list="personeel-opties"
+        placeholder="Naam medewerker"
+        type="text"
+        (input)="onMedewerkerInput($index, $event)"
+        [value]="medewerker"
+      >
+      <button class="action-button" type="button" (click)="onRemoveMedewerker($index)">
+        Verwijder
+      </button>
+    </div>
+    }
+
+    <button class="action-button primary add-employee-button" type="button" (click)="onAddMedewerker()">
+      Medewerker toevoegen
+    </button>
+  </div>
+
+  <div class="time-block">
+    <p class="medewerkers-title">Tijdsplanning</p>
+    <div class="time-grid">
+      <label class="time-field">
+        <span>Begintijd</span>
+        <input
+          class="person-input time-input"
+          inputmode="numeric"
+          maxlength="5"
+          placeholder="08:00"
+          type="text"
+          (blur)="onStartTimeBlur()"
+          (input)="onStartTimeInput($event)"
+          [value]="pad().startTime"
+        >
+      </label>
+      <div class="time-field static">
+        <span>Eindtijd</span>
+        <strong>{{ endTime() }}</strong>
+      </div>
+      <div class="time-field static time-summary">
+        <span>Duur</span>
+        <strong>{{ durationLabel() }}</strong>
+      </div>
+    </div>
+  </div>
+</article>

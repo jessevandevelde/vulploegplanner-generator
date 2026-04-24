@@ -1,0 +1,68 @@
+<div class="planning-modal-backdrop">
+  <section class="planning-modal">
+    <header class="planning-modal-header">
+      <div class="planning-modal-copy">
+        <p class="eyebrow">Dag automatisch herkend</p>
+        <h2>{{ planningDraft().dayLabel }}</h2>
+        <p class="modal-subtitle">
+          Bestand: {{ planningDraft().sourceFileName }}
+          @if (planningDraft().documentDateLabel) {
+          <span> - Datum: {{ planningDraft().documentDateLabel }}</span>
+          }
+        </p>
+      </div>
+
+      <button class="action-button" type="button" (click)="close()">
+        Sluiten
+      </button>
+    </header>
+
+    @if (planningDraft().pads.length > 0) {
+    <div class="pad-grid">
+      @for (pad of planningDraft().pads; track pad.padName) {
+      <vpg-planning-pad-card
+        (medewerkerAdded)="medewerkerAdded.emit($event)"
+        (medewerkerChanged)="medewerkerChanged.emit($event)"
+        (medewerkerRemoved)="medewerkerRemoved.emit($event)"
+        (startTimeBlurred)="startTimeBlurred.emit($event)"
+        (startTimeChanged)="startTimeChanged.emit($event)"
+        [durationLabel]="durationLabels()[$index] ?? ''"
+        [endTime]="endTimes()[$index] ?? '--:--'"
+        [hasConflict]="padConflictStates()[$index] ?? false"
+        [pad]="pad"
+        [padIndex]="$index"
+      />
+      }
+    </div>
+
+    <datalist id="personeel-opties">
+      @for (person of personeelOpties(); track person) {
+      <option [value]="person"></option>
+      }
+    </datalist>
+    }
+    @else {
+    <p class="error-message">Er zijn geen herkenbare paden gevonden op pagina 1 van deze PDF.</p>
+    }
+
+    @if (errorMessage()) {
+    <p class="error-message">{{ errorMessage() }}</p>
+    }
+
+    @if (conflictSummary().length > 0) {
+    <aside aria-live="polite" class="planning-snackbar">
+      <strong>Overlap gevonden.</strong>
+      <span>{{ conflictSummary()[0] }}</span>
+    </aside>
+    }
+
+    <footer class="planning-modal-footer">
+      <button class="action-button" type="button" (click)="close()">
+        Sluiten
+      </button>
+      <button class="action-button primary" type="button" (click)="print()" [disabled]="isPrintingPlanning()">
+        {{ isPrintingPlanning() ? 'Printweergave wordt gemaakt...' : 'Print planning' }}
+      </button>
+    </footer>
+  </section>
+</div>
