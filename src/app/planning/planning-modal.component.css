@@ -1,0 +1,149 @@
+.planning-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background-color: rgb(15 23 42 / 32%);
+  backdrop-filter: blur(4px);
+}
+
+.planning-modal {
+  display: grid;
+  gap: 20px;
+  width: min(100%, 1120px);
+  max-height: calc(100vh - 48px);
+  padding: 24px;
+  overflow-y: auto;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-large);
+  background-color: var(--surface-color);
+  box-shadow: 0 14px 38px var(--shadow-color);
+}
+
+.planning-modal-header,
+.planning-modal-footer {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.planning-modal-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.modal-subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.pad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+.planning-snackbar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid rgb(201 63 63 / 28%);
+  border-radius: 12px;
+  background-color: #fff7f7;
+  color: rgb(148 33 33);
+  box-shadow: 0 8px 18px rgb(15 23 42 / 7%);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.planning-snackbar strong {
+  white-space: nowrap;
+}
+
+h2 {
+  color: var(--text-color);
+  font-size: clamp(24px, 3vw, 30px);
+  letter-spacing: -0.02em;
+}
+
+.eyebrow {
+  color: var(--accent-color);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-small);
+  background-color: #fff;
+  color: var(--text-color);
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.action-button.primary {
+  border-color: var(--accent-color);
+  background-color: var(--accent-color);
+  color: #fff;
+}
+
+.action-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgb(15 23 42 / 7%);
+}
+
+.action-button.primary:hover {
+  background-color: var(--accent-color-strong);
+}
+
+.action-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+  transform: none;
+}
+
+.error-message {
+  color: rgb(201 63 63);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+@media (width <= 840px) {
+  .planning-modal-header,
+  .planning-modal-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-button {
+    width: 100%;
+  }
+}
+
+@media (width <= 720px) {
+  .planning-modal {
+    padding-inline: 20px;
+  }
+
+  .planning-modal-backdrop {
+    padding: 12px;
+  }
+}

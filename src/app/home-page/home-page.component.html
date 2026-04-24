@@ -1,0 +1,116 @@
+<main class="page-shell">
+  <header class="top-bar">
+    <button class="button-label" type="button" (click)="togglePersoneelBeheer()">
+      {{ isPersoneelBeheerOpen ? 'Terug naar planning' : 'Beheer personeel' }}
+    </button>
+  </header>
+
+  @if (!isPersoneelBeheerOpen) {
+  <section class="upload-card">
+    <p class="eyebrow">Planning tool</p>
+    <h1>Vulploegplanning Generator</h1>
+    <p class="intro">
+      Upload de dagelijkse PDF. Pagina 1 wordt automatisch gelezen en omgezet naar colli per pad.
+    </p>
+    <label class="button-label" for="pdf-upload">
+      {{ isPlanningLoading ? 'PDF wordt verwerkt...' : 'maak vulploegplanning' }}
+    </label>
+    <input
+      accept="application/pdf"
+      class="file-input"
+      id="pdf-upload"
+      type="file"
+      (change)="onPdfSelected($event)"
+    >
+
+    <p class="file-name">{{ selectedFileName }}</p>
+
+    @if (errorMessage) {
+    <p class="error-message">{{ errorMessage }}</p>
+    }
+  </section>
+  }
+
+  @if (isPersoneelBeheerOpen) {
+  <section class="manage-card">
+    <h2>Personeel beheren per dag</h2>
+
+    <nav aria-label="Kies dag" class="day-tabs">
+      @for (day of days; track day) {
+      <button
+        class="day-tab"
+        type="button"
+        (click)="selectDay(day)"
+        [class.active]="activeDay === day"
+      >
+        {{ dayLabels[day] }}
+      </button>
+      }
+    </nav>
+
+    <div class="personeel-list">
+      @for (person of personeelPerDag[activeDay]; track $index) {
+      <div class="person-row">
+        <input
+          class="person-input"
+          type="text"
+          (input)="updateEditName($index, $event)"
+          [readonly]="editingIndex !== $index"
+          [value]="editingIndex === $index ? editingPersonName : person"
+        >
+        <div class="row-actions">
+          <button class="action-button primary" type="button" (click)="editingIndex === $index ? saveEdit() : startEdit($index)">
+            {{ editingIndex === $index ? 'Opslaan' : 'Bewerk' }}
+          </button>
+          <button class="action-button" type="button" (click)="cancelEdit()">
+            Annuleer
+          </button>
+          <button class="action-button danger" type="button" (click)="removePersoneel($index)">
+            Verwijder
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+
+    <div class="add-row">
+      <input
+        class="person-input"
+        placeholder="Nieuwe naam"
+        type="text"
+        [(ngModel)]="newPersonName"
+        (keyup.enter)="addPersoneel()"
+        [hidden]="!isAddingPerson"
+      >
+      <div class="row-actions">
+        <button class="action-button primary" type="button" (click)="isAddingPerson ? addPersoneel() : openNewPersonForm()">
+          {{ isAddingPerson ? 'Toevoegen' : 'Nieuwe persoon' }}
+        </button>
+        <button class="action-button" type="button" (click)="cancelNewPerson()" [hidden]="!isAddingPerson">
+          Annuleer
+        </button>
+      </div>
+    </div>
+  </section>
+  }
+</main>
+
+@if (isPlanningModalOpen && planningDraft) {
+<vpg-planning-modal
+  (closed)="closePlanningModal()"
+  (medewerkerAdded)="addPlanningMedewerker($event)"
+  (medewerkerChanged)="updatePlanningMedewerkerValue($event.padIndex, $event.medewerkerIndex, $event.value)"
+  (medewerkerRemoved)="removePlanningMedewerker($event.padIndex, $event.medewerkerIndex)"
+  (printRequested)="printPlanning()"
+  (startTimeBlurred)="normalizePlanningStartTime($event)"
+  (startTimeChanged)="updatePlanningStartTimeValue($event.padIndex, $event.value)"
+  [conflictSummary]="getPlanningConflictSummary()"
+  [durationLabels]="getPlanningDurationLabels()"
+  [endTimes]="getPlanningEndTimes()"
+  [errorMessage]="errorMessage"
+  [isPrintingPlanning]="isPrintingPlanning"
+  [padConflictStates]="getPlanningConflictStates()"
+  [personeelOpties]="personeelPerDag[planningDraft.dayKey]"
+  [planningDraft]="planningDraft"
+/>
+}

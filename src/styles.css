@@ -1,0 +1,16 @@
+@import url("./styles/reset.css");
+@import url("./styles/variables.css");
+@import url("./styles/modal.css");
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    linear-gradient(180deg, #f7f9fc 0%, var(--page-background) 42%, var(--page-background-alt) 100%);
+  color: var(--text-color);
+  font-family: var(--font-family-base);
+}
