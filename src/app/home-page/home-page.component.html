@@ -96,123 +96,21 @@
 </main>
 
 @if (isPlanningModalOpen && planningDraft) {
-<div class="planning-modal-backdrop">
-  <section class="planning-modal">
-    <header class="planning-modal-header">
-      <div class="planning-modal-copy">
-        <p class="eyebrow">Dag automatisch herkend</p>
-        <h2>{{ planningDraft.dayLabel }}</h2>
-        <p class="modal-subtitle">
-          Bestand: {{ planningDraft.sourceFileName }}
-          @if (planningDraft.documentDateLabel) {
-          <span> - Datum: {{ planningDraft.documentDateLabel }}</span>
-          }
-        </p>
-      </div>
-
-      <button class="action-button" type="button" (click)="closePlanningModal()">
-        Sluiten
-      </button>
-    </header>
-
-    @if (planningDraft.pads.length > 0) {
-    <div class="pad-grid">
-      @for (pad of planningDraft.pads; track pad.padName; let padIndex = $index) {
-      <article class="pad-card">
-        <div class="pad-card-header">
-          <div>
-            <h3>{{ pad.padName }}</h3>
-            <p class="pad-meta">{{ pad.groups.length }} groep(en)</p>
-          </div>
-
-          <span class="colli-badge">{{ pad.totalColli }} colli</span>
-        </div>
-
-        <ul class="group-list">
-          @for (group of pad.groups; track group.code) {
-          <li class="group-item">
-            <span>{{ group.code }} {{ group.description }}</span>
-            <strong>{{ group.colli }}</strong>
-          </li>
-          }
-        </ul>
-
-        <div class="medewerkers-block">
-          <p class="medewerkers-title">Medewerkers</p>
-
-          @for (medewerker of pad.medewerkers; track $index; let medewerkerIndex = $index) {
-          <div class="employee-row">
-            <input
-              class="person-input"
-              list="personeel-opties"
-              placeholder="Naam medewerker"
-              type="text"
-              (input)="updatePlanningMedewerker(padIndex, medewerkerIndex, $event)"
-              [value]="medewerker"
-            >
-            <button class="action-button" type="button" (click)="removePlanningMedewerker(padIndex, medewerkerIndex)">
-              Verwijder
-            </button>
-          </div>
-          }
-
-          <button class="action-button primary add-employee-button" type="button" (click)="addPlanningMedewerker(padIndex)">
-            Medewerker toevoegen
-          </button>
-        </div>
-
-        <div class="time-block">
-          <p class="medewerkers-title">Tijdsplanning</p>
-          <div class="time-grid">
-            <label class="time-field">
-              <span>Begintijd</span>
-              <input
-                class="person-input time-input"
-                inputmode="numeric"
-                maxlength="5"
-                placeholder="08:00"
-                type="text"
-                (blur)="normalizePlanningStartTime(padIndex)"
-                (input)="updatePlanningStartTime(padIndex, $event)"
-                [value]="pad.startTime"
-              >
-            </label>
-            <div class="time-field static">
-              <span>Eindtijd</span>
-              <strong>{{ getPlanningEndTime(pad) }}</strong>
-            </div>
-            <div class="time-field static time-summary">
-              <span>Duur</span>
-              <strong>{{ getPlanningDurationLabel(pad) }}</strong>
-            </div>
-          </div>
-        </div>
-      </article>
-      }
-    </div>
-
-    <datalist id="personeel-opties">
-      @for (person of personeelPerDag[planningDraft.dayKey]; track person) {
-      <option [value]="person"></option>
-      }
-    </datalist>
-    }
-    @else {
-    <p class="error-message">Er zijn geen herkenbare paden gevonden op pagina 1 van deze PDF.</p>
-    }
-
-    @if (errorMessage) {
-    <p class="error-message">{{ errorMessage }}</p>
-    }
-
-    <footer class="planning-modal-footer">
-      <button class="action-button" type="button" (click)="closePlanningModal()">
-        Sluiten
-      </button>
-      <button class="action-button primary" type="button" (click)="printPlanning()" [disabled]="isPrintingPlanning">
-        {{ isPrintingPlanning ? 'Printweergave wordt gemaakt...' : 'Print planning' }}
-      </button>
-    </footer>
-  </section>
-</div>
+<vpg-planning-modal
+  (closed)="closePlanningModal()"
+  (medewerkerAdded)="addPlanningMedewerker($event)"
+  (medewerkerChanged)="updatePlanningMedewerkerValue($event.padIndex, $event.medewerkerIndex, $event.value)"
+  (medewerkerRemoved)="removePlanningMedewerker($event.padIndex, $event.medewerkerIndex)"
+  (printRequested)="printPlanning()"
+  (startTimeBlurred)="normalizePlanningStartTime($event)"
+  (startTimeChanged)="updatePlanningStartTimeValue($event.padIndex, $event.value)"
+  [conflictSummary]="getPlanningConflictSummary()"
+  [durationLabels]="getPlanningDurationLabels()"
+  [endTimes]="getPlanningEndTimes()"
+  [errorMessage]="errorMessage"
+  [isPrintingPlanning]="isPrintingPlanning"
+  [padConflictStates]="getPlanningConflictStates()"
+  [personeelOpties]="personeelPerDag[planningDraft.dayKey]"
+  [planningDraft]="planningDraft"
+/>
 }

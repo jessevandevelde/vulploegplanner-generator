@@ -2,36 +2,16 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import type { OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { PlanningModalComponent } from '../planning/planning-modal.component';
+import type { DayKey, PlanningDraft, PlanningPad } from '../planning/planning.models';
 
-type DayKey = 'maandag'
-  | 'dinsdag'
-  | 'woensdag'
-  | 'donderdag'
-  | 'vrijdag'
-  | 'zaterdag'
-  | 'zondag';
-
-interface PlanningGroup {
-  code: number
-  colli: number
-  description: string
-}
-
-interface PlanningPad {
-  groups: PlanningGroup[]
-  medewerkers: string[]
+interface PlanningConflictAssignment {
+  endMinutes: number
+  medewerker: string
+  medewerkerKey: string
+  padIndex: number
   padName: string
-  startTime: string
-  totalColli: number
-}
-
-interface PlanningDraft {
-  dayKey: DayKey
-  dayLabel: string
-  documentDate: string | null
-  documentDateLabel: string
-  pads: PlanningPad[]
-  sourceFileName: string
+  startMinutes: number
 }
 
 const API_BASE_URL = '/api';
@@ -51,7 +31,7 @@ const DEFAULT_EMPLOYEE_ENTRY = '';
 @Component({
   selector: 'vpg-home-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PlanningModalComponent],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.css',
 })
@@ -238,29 +218,6 @@ export class HomePageComponent implements OnInit {
     pad.medewerkers.splice(medewerkerIndex, 1);
   }
 
-  protected updatePlanningMedewerker(padIndex: number, medewerkerIndex: number, event: Event): void {
-    const pad = this.planningDraft?.pads[padIndex];
-    const input = event.target;
-
-    if (!pad || !(input instanceof HTMLInputElement)) {
-      return;
-    }
-
-    pad.medewerkers[medewerkerIndex] = input.value;
-  }
-
-  protected updatePlanningStartTime(padIndex: number, event: Event): void {
-    const pad = this.planningDraft?.pads[padIndex];
-    const input = event.target;
-
-    if (!pad || !(input instanceof HTMLInputElement)) {
-      return;
-    }
-
-    pad.startTime = this.sanitizeTimeInput(input.value);
-    input.value = pad.startTime;
-  }
-
   protected normalizePlanningStartTime(padIndex: number): void {
     const pad = this.planningDraft?.pads[padIndex];
 
@@ -287,6 +244,53 @@ export class HomePageComponent implements OnInit {
     return `${durationMinutes} min`;
   }
 
+  protected getPlanningWarningsForPad(padIndex: number): string[] {
+    return this.getPlanningConflictMap().get(padIndex) ?? [];
+  }
+
+  protected hasPlanningWarnings(padIndex: number): boolean {
+    return this.getPlanningWarningsForPad(padIndex).length > 0;
+  }
+
+  protected getPlanningConflictSummary(): string[] {
+    const conflictMap = this.getPlanningConflictMap();
+
+    return [...new Set([...conflictMap.values()].flat())];
+  }
+
+  protected getPlanningConflictStates(): boolean[] {
+    return this.planningDraft?.pads.map((_, padIndex) => this.hasPlanningWarnings(padIndex)) ?? [];
+  }
+
+  protected getPlanningEndTimes(): string[] {
+    return this.planningDraft?.pads.map(pad => this.getPlanningEndTime(pad)) ?? [];
+  }
+
+  protected getPlanningDurationLabels(): string[] {
+    return this.planningDraft?.pads.map(pad => this.getPlanningDurationLabel(pad)) ?? [];
+  }
+
+  protected updatePlanningMedewerkerValue(padIndex: number, medewerkerIndex: number, value: string): void {
+    const pad = this.planningDraft?.pads[padIndex];
+
+    if (!pad) {
+      return;
+    }
+
+    pad.medewerkers[medewerkerIndex] = value;
+    this.applySuggestedStartTimeForMedewerker(padIndex, value);
+  }
+
+  protected updatePlanningStartTimeValue(padIndex: number, value: string): void {
+    const pad = this.planningDraft?.pads[padIndex];
+
+    if (!pad) {
+      return;
+    }
+
+    pad.startTime = this.sanitizeTimeInput(value);
+  }
+
   protected printPlanning(): void {
     if (!this.planningDraft) {
       return;
@@ -304,6 +308,10 @@ export class HomePageComponent implements OnInit {
 
       if (planning.pads.some(pad => pad.medewerkers.length === 0)) {
         throw new Error('Voeg voor elk pad minimaal een medewerker toe voordat je print.');
+      }
+
+      if (this.getPlanningConflictSummary().length > 0) {
+        throw new Error('Los eerst de overlap in medewerkers op voordat je print.');
       }
 
       const printWindow = window.open('', '_blank', 'width=1200,height=900');
@@ -399,6 +407,155 @@ export class HomePageComponent implements OnInit {
     return Math.ceil(pad.totalColli / effectiveMedewerkerCount);
   }
 
+  private applySuggestedStartTimeForMedewerker(padIndex: number, medewerkerName: string): void {
+    const pad = this.planningDraft?.pads[padIndex];
+    const suggestedStartMinutes = this.getLatestEndTimeForMedewerker(padIndex, medewerkerName);
+
+    if (!pad || suggestedStartMinutes === null) {
+      return;
+    }
+
+    const currentStartMinutes = this.parseTimeToMinutes(pad.startTime);
+
+    if (currentStartMinutes !== null && currentStartMinutes >= suggestedStartMinutes) {
+      return;
+    }
+
+    pad.startTime = this.formatMinutesAsTime(suggestedStartMinutes);
+  }
+
+  private getLatestEndTimeForMedewerker(padIndex: number, medewerkerName: string): number | null {
+    if (!this.planningDraft) {
+      return null;
+    }
+
+    const medewerkerKey = medewerkerName.trim().toLocaleLowerCase();
+
+    if (!medewerkerKey) {
+      return null;
+    }
+
+    let latestEndMinutes: number | null = null;
+
+    for (const [otherPadIndex, otherPad] of this.planningDraft.pads.entries()) {
+      if (otherPadIndex === padIndex) {
+        continue;
+      }
+
+      const hasMatchingMedewerker = otherPad.medewerkers.some(
+        medewerker => medewerker.trim().toLocaleLowerCase() === medewerkerKey,
+      );
+
+      if (!hasMatchingMedewerker) {
+        continue;
+      }
+
+      const otherStartMinutes = this.parseTimeToMinutes(otherPad.startTime);
+
+      if (otherStartMinutes === null) {
+        continue;
+      }
+
+      const otherEndMinutes = otherStartMinutes + this.getPlanningDurationMinutes(otherPad);
+
+      if (latestEndMinutes === null || otherEndMinutes > latestEndMinutes) {
+        latestEndMinutes = otherEndMinutes;
+      }
+    }
+
+    return latestEndMinutes;
+  }
+
+  private getPlanningConflictMap(): Map<number, string[]> {
+    if (!this.planningDraft) {
+      return new Map();
+    }
+
+    const assignments = this.planningDraft.pads.flatMap((pad, padIndex) => {
+      const startMinutes = this.parseTimeToMinutes(pad.startTime);
+
+      if (startMinutes === null) {
+        return [];
+      }
+
+      const endMinutes = startMinutes + this.getPlanningDurationMinutes(pad);
+
+      return pad.medewerkers
+        .map(medewerker => medewerker.trim())
+        .filter(Boolean)
+        .map(medewerker => ({
+          endMinutes,
+          medewerker,
+          medewerkerKey: medewerker.toLocaleLowerCase(),
+          padIndex,
+          padName: pad.padName,
+          startMinutes,
+        }));
+    });
+
+    const conflicts = new Map<number, Set<string>>();
+
+    for (let index = 0; index < assignments.length; index += 1) {
+      const currentAssignment = assignments[index];
+
+      for (let otherIndex = index + 1; otherIndex < assignments.length; otherIndex += 1) {
+        const otherAssignment = assignments[otherIndex];
+
+        if (currentAssignment.medewerkerKey !== otherAssignment.medewerkerKey) {
+          continue;
+        }
+
+        if (!this.doPlanningTimesOverlap(currentAssignment, otherAssignment)) {
+          continue;
+        }
+
+        const currentMessage = this.buildConflictMessage(currentAssignment, otherAssignment);
+        const otherMessage = this.buildConflictMessage(otherAssignment, currentAssignment);
+
+        this.addConflictMessage(conflicts, currentAssignment.padIndex, currentMessage);
+        this.addConflictMessage(conflicts, otherAssignment.padIndex, otherMessage);
+      }
+    }
+
+    return new Map(
+      [...conflicts.entries()].map(([padIndex, messages]) => [padIndex, [...messages]]),
+    );
+  }
+
+  private doPlanningTimesOverlap(
+    firstAssignment: PlanningConflictAssignment,
+    secondAssignment: PlanningConflictAssignment,
+  ): boolean {
+    return firstAssignment.startMinutes < secondAssignment.endMinutes
+      && secondAssignment.startMinutes < firstAssignment.endMinutes;
+  }
+
+  private buildConflictMessage(
+    currentAssignment: PlanningConflictAssignment,
+    otherAssignment: PlanningConflictAssignment,
+  ): string {
+    const currentRange = `${this.formatMinutesAsTime(currentAssignment.startMinutes)}-${this.formatMinutesAsTime(currentAssignment.endMinutes)}`;
+    const otherRange = `${this.formatMinutesAsTime(otherAssignment.startMinutes)}-${this.formatMinutesAsTime(otherAssignment.endMinutes)}`;
+
+    if (currentAssignment.padIndex === otherAssignment.padIndex) {
+      return `${currentAssignment.medewerker} staat dubbel op ${currentAssignment.padName} (${currentRange}).`;
+    }
+
+    return `${currentAssignment.medewerker} overlap met ${otherAssignment.padName} (${otherRange}).`;
+  }
+
+  private addConflictMessage(conflicts: Map<number, Set<string>>, padIndex: number, message: string): void {
+    const existingMessages = conflicts.get(padIndex);
+
+    if (existingMessages) {
+      existingMessages.add(message);
+
+      return;
+    }
+
+    conflicts.set(padIndex, new Set([message]));
+  }
+
   private parseTimeToMinutes(value: string): number | null {
     const normalizedValue = this.normalizeTimeValue(value);
 
@@ -486,45 +643,101 @@ export class HomePageComponent implements OnInit {
     titleElement.textContent = `Planning ${planning.dayLabel}`;
     printDocument.head.append(titleElement);
     styleElement.textContent = `
+      @page {
+        size: A4 landscape;
+        margin: 8mm;
+      }
+
       body {
-        margin: 24px;
+        margin: 0;
         color: #18314f;
         font-family: "Segoe UI", sans-serif;
+        font-size: 10px;
       }
 
       h1 {
-        margin: 0 0 8px;
-        font-size: 30px;
+        margin: 0;
+        font-size: 18px;
+        line-height: 1.1;
       }
 
-      p {
-        margin: 0 0 6px;
+      .print-header {
+        display: grid;
+        gap: 4px;
+      }
+
+      .print-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 10px;
         color: #5f7188;
+        font-size: 9px;
+        line-height: 1.25;
+      }
+
+      .print-meta span {
+        white-space: nowrap;
       }
 
       table {
         width: 100%;
-        margin-top: 24px;
+        margin-top: 8px;
         border-collapse: collapse;
+        table-layout: fixed;
       }
 
       th,
       td {
-        padding: 10px 12px;
+        padding: 4px 6px;
         border: 1px solid #c9d9ea;
         text-align: left;
         vertical-align: top;
-        font-size: 13px;
+        font-size: 9px;
+        line-height: 1.2;
+        word-break: break-word;
       }
 
       th {
         background-color: #14609e;
         color: #fff;
+        font-size: 9px;
+      }
+
+      th:nth-child(1),
+      td:nth-child(1) {
+        width: 12%;
+      }
+
+      th:nth-child(2),
+      td:nth-child(2) {
+        width: 6%;
+      }
+
+      th:nth-child(3),
+      td:nth-child(3),
+      th:nth-child(4),
+      td:nth-child(4) {
+        width: 7%;
+      }
+
+      th:nth-child(5),
+      td:nth-child(5) {
+        width: 6%;
+      }
+
+      th:nth-child(6),
+      td:nth-child(6) {
+        width: 20%;
+      }
+
+      th:nth-child(7),
+      td:nth-child(7) {
+        width: 42%;
       }
 
       @media print {
         body {
-          margin: 12mm;
+          margin: 0;
         }
       }
     `;
@@ -538,7 +751,7 @@ export class HomePageComponent implements OnInit {
         const medewerkers = pad.medewerkers.join(', ');
 
         const artikelgroepen = pad.groups
-          .map(group => `${group.code} ${group.description} (${group.colli})`)
+          .map(group => `${group.description} (${group.colli})`)
           .join(', ');
 
         return `
@@ -556,20 +769,24 @@ export class HomePageComponent implements OnInit {
       .join('');
 
     return `
-  <h1>Vulploegplanning ${this.escapeHtml(planning.dayLabel)}</h1>
-  <p>Bronbestand: ${this.escapeHtml(planning.sourceFileName)}</p>
-  <p>Datum: ${this.escapeHtml(planning.documentDateLabel || planning.dayLabel)}</p>
-  <p>Standaard vulsnelheid: 1 colli per minuut per medewerker</p>
+  <header class="print-header">
+    <h1>Vulploegplanning ${this.escapeHtml(planning.dayLabel)}</h1>
+    <div class="print-meta">
+      <span>Datum: ${this.escapeHtml(planning.documentDateLabel || planning.dayLabel)}</span>
+      <span>Bron: ${this.escapeHtml(planning.sourceFileName)}</span>
+      <span>Vulsnelheid: 1 colli/min/medewerker</span>
+    </div>
+  </header>
   <table>
     <thead>
       <tr>
         <th>Pad</th>
         <th>Colli</th>
-        <th>Begintijd</th>
-        <th>Eindtijd</th>
+        <th>Start</th>
+        <th>Eind</th>
         <th>Duur</th>
         <th>Medewerkers</th>
-        <th>Artikelgroepen</th>
+        <th>Groepen</th>
       </tr>
     </thead>
     <tbody>
