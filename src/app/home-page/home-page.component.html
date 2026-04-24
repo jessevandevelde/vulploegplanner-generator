@@ -1,1 +1,18 @@
-<p>Page works</p>
+<main class="page-shell">
+  <section class="upload-card">
+    <h1>Vulploegplanning Generator</h1>
+
+    <label class="button-label" for="pdf-upload">
+      maak vulploegplanning
+    </label>
+    <input
+      accept="application/pdf"
+      class="file-input"
+      id="pdf-upload"
+      type="file"
+      (change)="onPdfSelected($event)"
+    >
+
+    <p class="file-name">{{ selectedFileName }}</p>
+  </section>
+</main>

@@ -1,3 +1,58 @@
-p {
-  color: black;
+.page-shell {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 32px;
+}
+
+.upload-card {
+  display: grid;
+  gap: 20px;
+  width: min(100%, 520px);
+  padding: 40px 32px;
+  text-align: center;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-large);
+  background-color: var(--surface-color);
+  box-shadow: 0 24px 80px var(--shadow-color);
+  backdrop-filter: blur(10px);
+}
+
+h1 {
+  color: var(--text-color);
+  font-size: clamp(28px, 5vw, 42px);
+  line-height: 1.1;
+}
+
+.button-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 16px 24px;
+  border-radius: 999px;
+  background-color: var(--accent-color);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease;
+}
+
+.button-label:hover {
+  background-color: var(--accent-color-strong);
+  transform: translateY(-1px);
+}
+
+.file-input {
+  display: none;
+}
+
+.file-name {
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1.5;
 }
