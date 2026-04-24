@@ -26,9 +26,9 @@
         (medewerkerRemoved)="medewerkerRemoved.emit($event)"
         (startTimeBlurred)="startTimeBlurred.emit($event)"
         (startTimeChanged)="startTimeChanged.emit($event)"
-        [durationLabel]="durationLabels()[$index] ?? ''"
-        [endTime]="endTimes()[$index] ?? '--:--'"
-        [hasConflict]="padConflictStates()[$index] ?? false"
+        [durationLabel]="durationLabels()[$index]"
+        [endTime]="endTimes()[$index]"
+        [hasConflict]="padConflictStates()[$index]"
         [pad]="pad"
         [padIndex]="$index"
       />
