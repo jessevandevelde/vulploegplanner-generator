@@ -3,15 +3,15 @@
   align-content: start;
   justify-items: center;
   min-height: 100vh;
-  padding: 40px 20px 56px;
-  gap: 24px;
+  padding: 32px 20px 48px;
+  gap: 20px;
 }
 
 .top-bar {
   width: 100%;
   display: flex;
   justify-content: center;
-  padding-top: 8px;
+  padding-top: 4px;
 }
 
 .upload-card,
@@ -19,15 +19,14 @@
   border: 1px solid var(--surface-border);
   border-radius: var(--radius-large);
   background-color: var(--surface-color);
-  box-shadow: 0 24px 80px var(--shadow-color);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 28px var(--shadow-color);
 }
 
 .upload-card {
   display: grid;
-  gap: 18px;
-  width: min(100%, 560px);
-  padding: 40px 32px;
+  gap: 16px;
+  width: min(100%, 600px);
+  padding: 32px;
   text-align: center;
 }
 
@@ -35,7 +34,7 @@
   display: grid;
   gap: 16px;
   width: min(100%, 960px);
-  padding: 28px;
+  padding: 24px;
 }
 
 .employee-row,
@@ -60,20 +59,22 @@
 
 h1 {
   color: var(--text-color);
-  font-size: clamp(34px, 6vw, 56px);
-  line-height: 1;
+  font-size: clamp(32px, 5vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
 }
 
 h2 {
   color: var(--text-color);
-  font-size: clamp(24px, 3.5vw, 34px);
+  font-size: clamp(24px, 3vw, 30px);
+  letter-spacing: -0.02em;
 }
 
 .eyebrow {
   color: var(--accent-color);
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -81,22 +82,22 @@ h2 {
   max-width: 56ch;
   margin-inline: auto;
   color: var(--text-muted);
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.6;
 }
 
 .day-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .day-tab {
   min-height: 44px;
-  padding: 10px 14px;
+  padding: 10px 16px;
   border: 1px solid var(--surface-border);
-  border-radius: 999px;
-  background-color: transparent;
+  border-radius: var(--radius-small);
+  background-color: #f8fafc;
   color: var(--text-color);
   font-size: 14px;
   font-weight: 600;
@@ -116,7 +117,7 @@ h2 {
 
 .person-row {
   padding: 12px 0;
-  border-bottom: 1px solid rgb(20 96 158 / 10%);
+  border-bottom: 1px solid #e7edf4;
 }
 
 .person-input {
@@ -125,7 +126,7 @@ h2 {
   padding: 10px 12px;
   border: 1px solid var(--surface-border);
   border-radius: var(--radius-small);
-  background-color: rgb(255 255 255 / 72%);
+  background-color: #fff;
   color: var(--text-color);
 }
 
@@ -141,16 +142,17 @@ h2 {
   align-items: center;
   justify-content: center;
   min-height: 44px;
-  padding: 10px 14px;
+  padding: 10px 16px;
   border: 1px solid var(--surface-border);
   border-radius: var(--radius-small);
-  background-color: transparent;
+  background-color: #fff;
   color: var(--text-color);
   cursor: pointer;
   transition:
-    transform 160ms ease,
+    transform 140ms ease,
     background-color 160ms ease,
-    border-color 160ms ease;
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .action-button.primary,
@@ -171,22 +173,24 @@ h2 {
   justify-content: center;
   min-height: 56px;
   min-width: 220px;
-  padding: 16px 28px;
-  border-radius: 999px;
+  padding: 14px 24px;
+  border-radius: 14px;
   border-width: 1px;
   border-style: solid;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
   text-align: center;
   transition:
-    transform 160ms ease,
-    background-color 160ms ease;
+    transform 140ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .action-button:hover,
 .button-label:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgb(15 23 42 / 8%);
 }
 
 .action-button.primary:hover,
@@ -230,7 +234,7 @@ h2 {
 
 @media (width <= 720px) {
   .page-shell {
-    padding: 24px 16px 40px;
+    padding: 20px 16px 36px;
   }
 
   .upload-card,
