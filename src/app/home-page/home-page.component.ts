@@ -36,10 +36,15 @@ interface PlanningDraft {
 
 const API_BASE_URL = '/api';
 const HOURS_PER_DAY = 24;
+const COLON_CHARACTER = ':';
+const DOT_CHARACTER = '.';
+const INVALID_NEGATIVE_OFFSET = -2;
 const MAX_HOUR = 23;
 const MAX_MINUTE = 59;
 const MINUTES_PER_HOUR = 60;
 const PAD_START_LENGTH = 2;
+const RAW_TIME_INPUT_MAX_LENGTH = 5;
+const THREE_DIGIT_TIME_LENGTH = 3;
 const EMPTY_FILE_LABEL = 'Nog geen PDF geselecteerd.';
 const DEFAULT_EMPLOYEE_ENTRY = '';
 
@@ -252,7 +257,18 @@ export class HomePageComponent implements OnInit {
       return;
     }
 
-    pad.startTime = input.value;
+    pad.startTime = this.sanitizeTimeInput(input.value);
+    input.value = pad.startTime;
+  }
+
+  protected normalizePlanningStartTime(padIndex: number): void {
+    const pad = this.planningDraft?.pads[padIndex];
+
+    if (!pad) {
+      return;
+    }
+
+    pad.startTime = this.normalizeTimeValue(pad.startTime) ?? pad.startTime;
   }
 
   protected getPlanningEndTime(pad: PlanningPad): string {
@@ -384,8 +400,14 @@ export class HomePageComponent implements OnInit {
   }
 
   private parseTimeToMinutes(value: string): number | null {
+    const normalizedValue = this.normalizeTimeValue(value);
+
+    if (!normalizedValue) {
+      return null;
+    }
+
     const timePattern = /^(\d{2}):(\d{2})$/;
-    const match = timePattern.exec(value);
+    const match = timePattern.exec(normalizedValue);
 
     if (!match) {
       return null;
@@ -400,6 +422,48 @@ export class HomePageComponent implements OnInit {
     }
 
     return (hours * MINUTES_PER_HOUR) + minutes;
+  }
+
+  private sanitizeTimeInput(value: string): string {
+    return value
+      .replaceAll(DOT_CHARACTER, COLON_CHARACTER)
+      .replaceAll(/[^0-9:]/g, '')
+      .slice(0, RAW_TIME_INPUT_MAX_LENGTH);
+  }
+
+  private normalizeTimeValue(value: string): string | null {
+    const sanitizedValue = this.sanitizeTimeInput(value).trim();
+
+    if (!sanitizedValue) {
+      return null;
+    }
+
+    const compactDigits = sanitizedValue.replaceAll(COLON_CHARACTER, '');
+    let hours: number | null = null;
+    let minutes: number | null = null;
+
+    if (/^\d{1,2}:\d{2}$/.test(sanitizedValue)) {
+      const [hourString, minuteString] = sanitizedValue.split(COLON_CHARACTER);
+
+      hours = Number(hourString);
+      minutes = Number(minuteString);
+    }
+    else if (/^\d{3,4}$/.test(compactDigits)) {
+      const hourDigits = compactDigits.length === THREE_DIGIT_TIME_LENGTH
+        ? compactDigits.slice(0, 1)
+        : compactDigits.slice(0, PAD_START_LENGTH);
+
+      const minuteDigits = compactDigits.slice(INVALID_NEGATIVE_OFFSET);
+
+      hours = Number(hourDigits);
+      minutes = Number(minuteDigits);
+    }
+
+    if (hours === null || minutes === null || hours > MAX_HOUR || minutes > MAX_MINUTE) {
+      return null;
+    }
+
+    return `${String(hours).padStart(PAD_START_LENGTH, '0')}:${String(minutes).padStart(PAD_START_LENGTH, '0')}`;
   }
 
   private formatMinutesAsTime(totalMinutes: number): string {

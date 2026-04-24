@@ -167,8 +167,12 @@
             <label class="time-field">
               <span>Begintijd</span>
               <input
-                class="person-input"
-                type="time"
+                class="person-input time-input"
+                inputmode="numeric"
+                maxlength="5"
+                placeholder="08:00"
+                type="text"
+                (blur)="normalizePlanningStartTime(padIndex)"
                 (input)="updatePlanningStartTime(padIndex, $event)"
                 [value]="pad.startTime"
               >
@@ -177,7 +181,7 @@
               <span>Eindtijd</span>
               <strong>{{ getPlanningEndTime(pad) }}</strong>
             </div>
-            <div class="time-field static">
+            <div class="time-field static time-summary">
               <span>Duur</span>
               <strong>{{ getPlanningDurationLabel(pad) }}</strong>
             </div>
