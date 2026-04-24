@@ -44,5 +44,10 @@ Thumbs.db
 .env.production
 
 # Json files
-
-.json
+src/assets/json/maandag-personeel.json
+src/assets/json/dinsdag-personeel.json
+src/assets/json/woensdag-personeel.json
+src/assets/json/donderdag-personeel.json
+src/assets/json/vrijdag-personeel.json
+src/assets/json/zaderdag-personeel.json
+src/assets/json/zondag-personeel.json
