@@ -2,76 +2,25 @@ import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const bundledPdfJsPath = path.join(
-  os.homedir(),
-  '.cache',
-  'codex-runtimes',
-  'codex-primary-runtime',
-  'dependencies',
-  'node',
-  'node_modules',
-  'pdfjs-dist',
-  'legacy',
-  'build',
-  'pdf.mjs',
-);
+// FIX: We importeren nu direct vanuit de node_modules van het project
+// in plaats van een hardcoded pad naar een .cache map.
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.js';
 
 const knownCodes = new Set([
-  19,
-  21,
-  22,
-  30,
-  31,
-  32,
-  33,
-  34,
-  35,
-  36,
-  37,
-  38,
-  39,
-  40,
-  41,
-  42,
-  43,
-  44,
-  45,
-  46,
-  47,
-  48,
-  49,
-  51,
-  52,
-  54,
-  55,
-  60,
-  61,
-  62,
-  65,
-  66,
-  67,
-  68,
-  69,
+  19, 21, 22, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 52, 54, 55, 60, 61, 62, 65, 66, 67, 68, 69,
 ]);
-
-let pdfJsPromise;
 
 function cleanNumber(value) {
   const digits = String(value).replaceAll(/\D/g, '');
-
   if (!digits) {
     return null;
   }
-
   return Number(digits);
 }
 
+// FIX: Deze functie is nu veel simpeler omdat de import bovenaan al geregeld is
 async function loadPdfJs() {
-  if (!pdfJsPromise) {
-    pdfJsPromise = import(pathToFileURL(bundledPdfJsPath).href);
-  }
-
-  return await pdfJsPromise;
+  return pdfjsLib;
 }
 
 function buildLines(items) {
@@ -116,7 +65,7 @@ export async function parsePlanningPdfPageOne(pdfBuffer) {
 
   const loadingTask = pdfjs.getDocument({
     data: new Uint8Array(pdfBuffer),
-    disableWorker: true,
+    disableWorker: true, // Belangrijk voor node omgevingen zonder worker support
     isEvalSupported: false,
     useWorkerFetch: false,
   });

@@ -37,6 +37,7 @@
     "@fortawesome/free-solid-svg-icons": "^7.0.1",
     "@ngrx/effects": "^20.0.1",
     "@ngrx/store": "^20.0.1",
+    "pdfjs-dist": "^3.11.174",
     "rxjs": "~7.6.0",
     "socket.io-client": "^4.8.1",
     "tslib": "^2.3.0",
