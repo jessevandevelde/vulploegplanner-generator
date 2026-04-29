@@ -37,6 +37,11 @@ export class PlanningPadCardComponent {
 
   public readonly startTimeBlurred = output<number>();
 
+  public readonly colliChanged = output<{
+    padIndex: number
+    value: string
+  }>();
+
   protected onMedewerkerInput(medewerkerIndex: number, event: Event): void {
     const targetInput = event.target;
 
@@ -77,5 +82,18 @@ export class PlanningPadCardComponent {
 
   protected onStartTimeBlur(): void {
     this.startTimeBlurred.emit(this.padIndex());
+  }
+
+  protected onColliInput(event: Event): void {
+    const targetInput = event.target;
+
+    if (!(targetInput instanceof HTMLInputElement)) {
+      return;
+    }
+
+    this.colliChanged.emit({
+      padIndex: this.padIndex(),
+      value: targetInput.value,
+    });
   }
 }

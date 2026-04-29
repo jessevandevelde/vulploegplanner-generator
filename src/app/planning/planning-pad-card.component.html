@@ -2,12 +2,29 @@
   <div class="pad-card-header">
     <div>
       <h3>{{ pad().padName }}</h3>
-      <p class="pad-meta">{{ pad().groups.length }} groep(en)</p>
+      <p class="pad-meta">{{ pad().isManualColli ? 'Handmatig invullen' : pad().groups.length + ' groep(en)' }}</p>
     </div>
 
+    @if (!pad().isManualColli) {
     <span class="colli-badge">{{ pad().totalColli }} colli</span>
+    }
   </div>
 
+  @if (pad().isManualColli) {
+  <label class="colli-field">
+    <span>Colli</span>
+    <input
+      class="person-input colli-input"
+      inputmode="numeric"
+      min="0"
+      placeholder="0"
+      type="number"
+      (input)="onColliInput($event)"
+      [value]="pad().totalColli || ''"
+    >
+  </label>
+  }
+  @else {
   <ul class="group-list">
     @for (group of pad().groups; track group.code) {
     <li class="group-item">
@@ -16,6 +33,7 @@
     </li>
     }
   </ul>
+  }
 
   <div class="medewerkers-block">
     <p class="medewerkers-title">Medewerkers</p>

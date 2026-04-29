@@ -12,9 +12,11 @@ const knownCodes = new Set([
 
 function cleanNumber(value) {
   const digits = String(value).replaceAll(/\D/g, '');
+
   if (!digits) {
     return null;
   }
+
   return Number(digits);
 }
 

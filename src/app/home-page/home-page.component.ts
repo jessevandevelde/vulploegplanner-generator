@@ -27,6 +27,7 @@ const RAW_TIME_INPUT_MAX_LENGTH = 5;
 const THREE_DIGIT_TIME_LENGTH = 3;
 const EMPTY_FILE_LABEL = 'Nog geen PDF geselecteerd.';
 const DEFAULT_EMPLOYEE_ENTRY = '';
+const MANUAL_ZUIVEL_PAD_NAME = 'Zuivel';
 
 @Component({
   selector: 'vpg-home-page',
@@ -291,6 +292,16 @@ export class HomePageComponent implements OnInit {
     pad.startTime = this.sanitizeTimeInput(value);
   }
 
+  protected updatePlanningColliValue(padIndex: number, value: string): void {
+    const pad = this.planningDraft?.pads[padIndex];
+
+    if (!pad?.isManualColli) {
+      return;
+    }
+
+    pad.totalColli = this.sanitizeColliInput(value);
+  }
+
   protected printPlanning(): void {
     if (!this.planningDraft) {
       return;
@@ -304,6 +315,10 @@ export class HomePageComponent implements OnInit {
 
       if (planning.pads.some(pad => !pad.startTime)) {
         throw new Error('Vul voor elk pad een begintijd in voordat je print.');
+      }
+
+      if (planning.pads.some(pad => pad.isManualColli && pad.totalColli <= 0)) {
+        throw new Error('Vul de colli voor Zuivel in voordat je print.');
       }
 
       if (planning.pads.some(pad => pad.medewerkers.length === 0)) {
@@ -362,11 +377,14 @@ export class HomePageComponent implements OnInit {
 
       this.planningDraft = {
         ...data,
-        pads: data.pads.map(pad => ({
-          ...pad,
-          medewerkers: pad.medewerkers.length > 0 ? pad.medewerkers : [DEFAULT_EMPLOYEE_ENTRY],
-          startTime: '',
-        })),
+        pads: [
+          ...data.pads.map(pad => ({
+            ...pad,
+            medewerkers: pad.medewerkers.length > 0 ? pad.medewerkers : [DEFAULT_EMPLOYEE_ENTRY],
+            startTime: '',
+          })),
+          this.createManualZuivelPad(),
+        ],
       };
       this.activeDay = data.dayKey;
       this.isPlanningModalOpen = true;
@@ -394,6 +412,27 @@ export class HomePageComponent implements OnInit {
         startTime: pad.startTime.trim(),
       })),
     };
+  }
+
+  private createManualZuivelPad(): PlanningPad {
+    return {
+      groups: [],
+      isManualColli: true,
+      medewerkers: [DEFAULT_EMPLOYEE_ENTRY],
+      padName: MANUAL_ZUIVEL_PAD_NAME,
+      startTime: '',
+      totalColli: 0,
+    };
+  }
+
+  private sanitizeColliInput(value: string): number {
+    const parsedValue = Number(value);
+
+    if (!Number.isFinite(parsedValue) || parsedValue < 0) {
+      return 0;
+    }
+
+    return Math.floor(parsedValue);
   }
 
   private getPlanningDurationMinutes(pad: PlanningPad): number {
@@ -750,9 +789,11 @@ export class HomePageComponent implements OnInit {
       .map((pad) => {
         const medewerkers = pad.medewerkers.join(', ');
 
-        const artikelgroepen = pad.groups
-          .map(group => `${group.description} (${group.colli})`)
-          .join(', ');
+        const artikelgroepen = pad.isManualColli
+          ? `${pad.padName} (${pad.totalColli})`
+          : pad.groups
+            .map(group => `${group.description} (${group.colli})`)
+            .join(', ');
 
         return `
           <tr>

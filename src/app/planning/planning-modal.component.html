@@ -21,6 +21,7 @@
     <div class="pad-grid">
       @for (pad of planningDraft().pads; track pad.padName) {
       <vpg-planning-pad-card
+        (colliChanged)="colliChanged.emit($event)"
         (medewerkerAdded)="medewerkerAdded.emit($event)"
         (medewerkerChanged)="medewerkerChanged.emit($event)"
         (medewerkerRemoved)="medewerkerRemoved.emit($event)"

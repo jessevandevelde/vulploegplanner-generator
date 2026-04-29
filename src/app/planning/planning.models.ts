@@ -14,6 +14,7 @@ export interface PlanningGroup {
 
 export interface PlanningPad {
   groups: PlanningGroup[]
+  isManualColli?: boolean
   medewerkers: string[]
   padName: string
   startTime: string

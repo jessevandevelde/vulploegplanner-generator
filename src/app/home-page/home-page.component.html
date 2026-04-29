@@ -98,6 +98,7 @@
 @if (isPlanningModalOpen && planningDraft) {
 <vpg-planning-modal
   (closed)="closePlanningModal()"
+  (colliChanged)="updatePlanningColliValue($event.padIndex, $event.value)"
   (medewerkerAdded)="addPlanningMedewerker($event)"
   (medewerkerChanged)="updatePlanningMedewerkerValue($event.padIndex, $event.medewerkerIndex, $event.value)"
   (medewerkerRemoved)="removePlanningMedewerker($event.padIndex, $event.medewerkerIndex)"

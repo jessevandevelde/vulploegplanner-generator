@@ -42,6 +42,11 @@ export class PlanningModalComponent {
 
   public readonly startTimeBlurred = output<number>();
 
+  public readonly colliChanged = output<{
+    padIndex: number
+    value: string
+  }>();
+
   protected close(): void {
     this.closed.emit();
   }
