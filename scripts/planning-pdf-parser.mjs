@@ -1,9 +1,3 @@
-import os from 'node:os';
-import path from 'node:path';
-import { pathToFileURL } from 'node:url';
-
-// FIX: We importeren nu direct vanuit de node_modules van het project
-// in plaats van een hardcoded pad naar een .cache map.
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.js';
 
 const knownCodes = new Set([
@@ -20,9 +14,16 @@ function cleanNumber(value) {
   return Number(digits);
 }
 
-// FIX: Deze functie is nu veel simpeler omdat de import bovenaan al geregeld is
 async function loadPdfJs() {
-  return pdfjsLib;
+  const pdfjs = typeof pdfjsLib.getDocument === 'function'
+    ? pdfjsLib
+    : pdfjsLib.default;
+
+  if (!pdfjs || typeof pdfjs.getDocument !== 'function') {
+    throw new Error('PDF.js kon niet correct worden geladen.');
+  }
+
+  return pdfjs;
 }
 
 function buildLines(items) {

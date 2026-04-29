@@ -5,6 +5,8 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
+    "doctor": "node scripts/check-dev-env.mjs",
+    "prestart": "node scripts/check-dev-env.mjs",
     "start:frontend": "ng serve --host 127.0.0.1",
     "backend": "node scripts/backend-server.mjs",
     "start": "node scripts/dev-server.mjs",
@@ -18,7 +20,12 @@
   },
   "private": true,
   "engines": {
-    "node": ">=18"
+    "node": "22.x",
+    "npm": "10.x"
+  },
+  "volta": {
+    "node": "22.20.0",
+    "npm": "10.9.3"
   },
   "dependencies": {
     "@angular/animations": "^20.2.4",
