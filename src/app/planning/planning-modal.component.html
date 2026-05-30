@@ -2,8 +2,16 @@
   <section class="planning-modal">
     <header class="planning-modal-header">
       <div class="planning-modal-copy">
-        <p class="eyebrow">Dag automatisch herkend</p>
-        <h2>{{ planningDraft().dayLabel }}</h2>
+        <p class="eyebrow">Dag handmatig kiezen</p>
+        <label class="day-field">
+          <span>Dag</span>
+          <select class="day-select" (change)="onDayChange($event)" [value]="selectedDay()">
+            <option value="">Kies dag</option>
+            @for (day of days(); track day) {
+            <option [value]="day">{{ dayLabels()[day] }}</option>
+            }
+          </select>
+        </label>
         <p class="modal-subtitle">
           Bestand: {{ planningDraft().sourceFileName }}
           @if (planningDraft().documentDateLabel) {

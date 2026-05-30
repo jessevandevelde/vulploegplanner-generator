@@ -99,6 +99,7 @@
 <vpg-planning-modal
   (closed)="closePlanningModal()"
   (colliChanged)="updatePlanningColliValue($event.padIndex, $event.value)"
+  (dayChanged)="updatePlanningDay($event)"
   (medewerkerAdded)="addPlanningMedewerker($event)"
   (medewerkerChanged)="updatePlanningMedewerkerValue($event.padIndex, $event.medewerkerIndex, $event.value)"
   (medewerkerRemoved)="removePlanningMedewerker($event.padIndex, $event.medewerkerIndex)"
@@ -106,12 +107,15 @@
   (startTimeBlurred)="normalizePlanningStartTime($event)"
   (startTimeChanged)="updatePlanningStartTimeValue($event.padIndex, $event.value)"
   [conflictSummary]="getPlanningConflictSummary()"
+  [dayLabels]="dayLabels"
+  [days]="days"
   [durationLabels]="getPlanningDurationLabels()"
   [endTimes]="getPlanningEndTimes()"
   [errorMessage]="errorMessage"
   [isPrintingPlanning]="isPrintingPlanning"
   [padConflictStates]="getPlanningConflictStates()"
-  [personeelOpties]="personeelPerDag[planningDraft.dayKey]"
+  [personeelOpties]="getPlanningPersonnelOptions()"
   [planningDraft]="planningDraft"
+  [selectedDay]="getSelectedPlanningDay()"
 />
 }

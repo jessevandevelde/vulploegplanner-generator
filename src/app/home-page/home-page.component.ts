@@ -69,6 +69,7 @@ export class HomePageComponent implements OnInit {
   protected isPlanningModalOpen = false;
   protected isPlanningLoading = false;
   protected isPrintingPlanning = false;
+  protected isPlanningDaySelected = false;
   protected planningDraft: PlanningDraft | null = null;
   protected personeelPerDag: Record<DayKey, string[]> = {
     maandag: [],
@@ -302,6 +303,29 @@ export class HomePageComponent implements OnInit {
     pad.totalColli = this.sanitizeColliInput(value);
   }
 
+  protected updatePlanningDay(day: DayKey): void {
+    if (!this.planningDraft) {
+      return;
+    }
+
+    this.planningDraft.dayKey = day;
+    this.planningDraft.dayLabel = this.dayLabels[day];
+    this.activeDay = day;
+    this.isPlanningDaySelected = true;
+  }
+
+  protected getPlanningPersonnelOptions(): string[] {
+    if (!this.planningDraft || !this.isPlanningDaySelected) {
+      return [];
+    }
+
+    return this.personeelPerDag[this.planningDraft.dayKey];
+  }
+
+  protected getSelectedPlanningDay(): DayKey | '' {
+    return this.isPlanningDaySelected && this.planningDraft ? this.planningDraft.dayKey : '';
+  }
+
   protected printPlanning(): void {
     if (!this.planningDraft) {
       return;
@@ -312,6 +336,10 @@ export class HomePageComponent implements OnInit {
 
     try {
       const planning = this.serializePlanningDraft();
+
+      if (!this.isPlanningDaySelected) {
+        throw new Error('Kies eerst de dag voordat je print.');
+      }
 
       if (planning.pads.some(pad => !pad.startTime)) {
         throw new Error('Vul voor elk pad een begintijd in voordat je print.');
@@ -377,6 +405,7 @@ export class HomePageComponent implements OnInit {
 
       this.planningDraft = {
         ...data,
+        dayLabel: '',
         pads: [
           ...data.pads.map(pad => ({
             ...pad,
@@ -386,7 +415,7 @@ export class HomePageComponent implements OnInit {
           this.createManualZuivelPad(),
         ],
       };
-      this.activeDay = data.dayKey;
+      this.isPlanningDaySelected = false;
       this.isPlanningModalOpen = true;
     }
     catch (error: unknown) {

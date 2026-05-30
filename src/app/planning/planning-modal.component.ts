@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, input, output } from '@angular/core';
 
-import type { PlanningDraft } from './planning.models';
+import type { DayKey, PlanningDraft } from './planning.models';
 import { PlanningPadCardComponent } from './planning-pad-card.component';
 
 @Component({
@@ -20,6 +20,9 @@ export class PlanningModalComponent {
   public readonly personeelOpties = input<string[]>([]);
   public readonly endTimes = input<string[]>([]);
   public readonly durationLabels = input<string[]>([]);
+  public readonly days = input.required<DayKey[]>();
+  public readonly dayLabels = input.required<Record<DayKey, string>>();
+  public readonly selectedDay = input<DayKey | ''>('');
 
   public readonly closed = output();
   public readonly printRequested = output();
@@ -46,6 +49,22 @@ export class PlanningModalComponent {
     padIndex: number
     value: string
   }>();
+
+  public readonly dayChanged = output<DayKey>();
+
+  protected onDayChange(event: Event): void {
+    const select = event.target;
+
+    if (!(select instanceof HTMLSelectElement)) {
+      return;
+    }
+
+    const selectedDay = select.value as DayKey;
+
+    if (this.days().includes(selectedDay)) {
+      this.dayChanged.emit(selectedDay);
+    }
+  }
 
   protected close(): void {
     this.closed.emit();

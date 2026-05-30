@@ -40,6 +40,23 @@
   line-height: 1.6;
 }
 
+.day-field {
+  display: grid;
+  gap: 6px;
+  max-width: 220px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.day-select {
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-small);
+  background-color: #fff;
+  color: var(--text-color);
+}
+
 .pad-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
